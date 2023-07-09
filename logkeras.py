@@ -21,14 +21,14 @@ label_file = '../data/HDFS/anomaly_label.csv' # The anomaly label file
 
 def shuffle2(d):
     len_ = len(d)
-    times = 1  # 设置打乱顺序次数
+    times = 1  # shuffle the ordering
     for i in range(times):
         index = np.random.choice(len_, 2)
         d[index[0]], d[index[1]] = d[index[1]], d[index[0]]
     return d
 
 
-def dropout(d, p=0.1):  # noise  设置删除单词个数
+def dropout(d, p=0.1):  # noise  deletion of the log keys
     len_ = len(d)
     index = np.random.choice(len_, int(len_ * p))
     for i in index:
@@ -53,7 +53,7 @@ def dataaugment(X):
 if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = "3"
     config = tf.compat.v1.ConfigProto()
-    config.gpu_options.allow_growth=True   #不全部占满显存, 按需分配
+    config.gpu_options.allow_growth=True   
     sess = tf.compat.v1.Session(config=config)
     window_size = 10
     set_session(sess)
