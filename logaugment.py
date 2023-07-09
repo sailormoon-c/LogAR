@@ -24,7 +24,7 @@ label_file = '../data/HDFS/anomaly_label.csv' # The anomaly label file
 
 def shuffle2(d):
     len_ = len(d)
-    times = 10  # 次数
+    times = 10  # for shuffling the ordering of log keys
     for i in range(times):
         index = np.random.choice(len_, 2)
         d[index[0]], d[index[1]] = d[index[1]], d[index[0]]
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     train_x = tokenizer.texts_to_sequences(train_text)
     val_x = tokenizer.texts_to_sequences(test_text)
     target_x = tokenizer.texts_to_sequences(target_text)
-    # 处理数据，方便重构
+    # Data processing and facilitate reconstruction
     maxlen = 100
 
     vocab_size = len(tokenizer.word_index) + 1
