@@ -33,14 +33,14 @@ label_file = "../data/HDFS/anomaly_label.csv"  # The anomaly label file
 
 def shuffle2(d):
     len_ = len(d)
-    times = 10  # 设置打乱顺序次数
+    times = 10  # shuffle the ordering
     for i in range(times):
         index = np.random.choice(len_, 2)
         d[index[0]], d[index[1]] = d[index[1]], d[index[0]]
     return d
 
 
-def dropout(d, p=0.7):  # noise  设置删除单词个数
+def dropout(d, p=0.7):  # noise  
     len_ = len(d)
     index = np.random.choice(len_, int(len_ * p))
     for i in index:
@@ -63,9 +63,9 @@ def dataaugment(X):
 
 
 if __name__ == "__main__":
-    os.environ["CUDA_VISIBLE_DEVICES"] = "1"  # 使用CPU就注释掉
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1"  
     config = tf.compat.v1.ConfigProto()
-    config.gpu_options.allow_growth = True  # 不全部占满显存, 按需分配
+    config.gpu_options.allow_growth = True  
     sess = tf.compat.v1.Session(config=config)
     window_size = 10
     tf.compat.v1.keras.backend.set_session(sess)
@@ -117,7 +117,7 @@ if __name__ == "__main__":
     train_x_1 = tokenizer.texts_to_sequences(train_new)
     val_x = tokenizer.texts_to_sequences(test_text)
     target_x = tokenizer.texts_to_sequences(target_text)
-    # 处理数据，方便重构
+    # data processing and reconstruction
     maxlen = 100
 
     vocab_size = len(tokenizer.word_index) + 1
@@ -149,7 +149,7 @@ if __name__ == "__main__":
         tokenizer.word_index, "../.vector_cache/glove.6B.100d.txt"
     )
 
-    ##编码器##
+    ##Encoder##
     encoder_inputs = Input(shape=(None,), name="input1")
     embeddings = Embedding(
         vocab_size,
@@ -159,14 +159,14 @@ if __name__ == "__main__":
         trainable=False,
         name="embedding1",
     )
-    encoder_embedding = embeddings(encoder_inputs)  # 编码embedding
+    encoder_embedding = embeddings(encoder_inputs)  # embedding
     encoder = LSTM(32, return_state=True, name="lstm1")
-    encoder_outputs, state_h, state_c = encoder(encoder_embedding)  # 编码，提取特征
-    # 分类
+    encoder_outputs, state_h, state_c = encoder(encoder_embedding)  # feature extraction
+    # classification
     encoder_dense = Dense(32, activation="sigmoid", name="fc1")
     outputs = encoder_dense(encoder_outputs)
     output_dense = Dense(2, activation="softmax", name="fc2")
-    output = output_dense(outputs)  # 预测结果
+    output = output_dense(outputs)  # prediction outcomes
     batchsize = K.shape(encoder_inputs)
     # print(batchsize.shape)
     coef = tf.Variable(1.0e-4 * tf.ones([10, 10], tf.float32), name="coef")
@@ -174,7 +174,7 @@ if __name__ == "__main__":
     z_state_h = tf.matmul(coef, state_h)
     z_state_c = tf.matmul(coef, state_c)
     encoder_state = [z_state_h, z_state_c]
-    ##解码器##
+    ##Decoder##
     decoder_inputs = Input(shape=(None,), name="input2")
     embeddings = Embedding(
         vocab_size,
@@ -188,7 +188,7 @@ if __name__ == "__main__":
     decoder = LSTM(32, return_sequences=True, return_state=True, name="lstm2")
     decoder_outputs, _, _ = decoder(decoder_embedding, initial_state=encoder_state)
     decoder_dense = Dense(vocab_size, activation="softmax", name="fc3")
-    decoder_output = decoder_dense(decoder_outputs)  # 解码
+    decoder_output = decoder_dense(decoder_outputs)  # Decoding
     model = Model([encoder_inputs, decoder_inputs], [output, decoder_output])
     # del model
     # model = tf.keras.models.Model([encoder_inputs, decoder_inputs], [output, decoder_output])
