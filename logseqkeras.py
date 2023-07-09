@@ -26,7 +26,7 @@ label_file = '../data/HDFS/anomaly_label.csv'  # The anomaly label file
 if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = "1"
     config = tf.compat.v1.ConfigProto()
-    config.gpu_options.allow_growth=True   #不全部占满显存, 按需分配
+    config.gpu_options.allow_growth=True   
     sess = tf.compat.v1.Session(config=config)
     window_size = 10
     tf.compat.v1.keras.backend.set_session(sess)
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     train_x = tokenizer.texts_to_sequences(train_text)
     val_x = tokenizer.texts_to_sequences(test_text)
     target_x = tokenizer.texts_to_sequences(target_text)
-    # 处理数据，方便重构
+    # data processing and reconstruction
     maxlen = 100
 
     vocab_size = len(tokenizer.word_index) + 1
@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
     embedding_matrix = build_matrix(tokenizer.word_index, '../.vector_cache/glove.6B.100d.txt')
 
-    ##编码器##
+    ##Encoder##
     encoder_inputs = Input(shape = (None,),name="input1")
     embeddings = Embedding(vocab_size, embedding_dim,
                                weights=[embedding_matrix],
@@ -105,7 +105,7 @@ if __name__ == '__main__':
     output_dense = Dense(2, activation="softmax", name="fc2")
     output = output_dense(outputs)
     encoder_state = [state_h, state_c]
-    ##解码器##
+    ##Decoder##
     decoder_inputs = Input(shape=(None,),name="input2")
     embeddings = Embedding(vocab_size, embedding_dim,
                            weights=[embedding_matrix],
